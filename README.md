@@ -14,11 +14,11 @@ Clawdy is a research workspace application designed specifically for academics, 
 
 - Flutter 3.44.2
 - Dart 3.12.2
-- Android Emulator
+- Android SDK
 
 ## Figma Design
 
-[Insert your Figma design link here]
+[Click Here](https://www.figma.com/design/mdxuywxi6GNmPzKV6mQLTa/Clawdy?node-id=0-1&t=fpXm55GObkXO5hy6-1)
 
 ## Screens
 
@@ -47,8 +47,8 @@ Clawdy is a research workspace application designed specifically for academics, 
 
 ## Author
 
-[Your Name]
-[Student ID / NIM]
+Ramadhanu
+24120310004
 
 ## Submission Date
 
