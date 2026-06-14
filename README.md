@@ -29,7 +29,7 @@ Clawdy is a research workspace application designed specifically for academics, 
 ## Setup Instructions
 
 1. Clone the repository:
-   git clone [your-repo-url]
+   git clone https://github.com/RZID/clawdy.git
    cd clawdy
 
 2. Get dependencies:
