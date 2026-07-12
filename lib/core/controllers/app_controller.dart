@@ -21,11 +21,15 @@ class AppController extends ChangeNotifier {
   String _userEmail = '';
   int _currentTab = 1; // 0: CHATS, 1: LIBRARY, 2: SETTINGS
   final List<MessageItem> _messages = [];
+  bool _isLoading = false;
+  String? _errorMessage;
 
   bool get isLoggedIn => _isLoggedIn;
   String get userEmail => _userEmail;
   int get currentTab => _currentTab;
   List<MessageItem> get messages => _messages;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
 
   AppController() {
     _initMockMessages();
@@ -53,14 +57,22 @@ class AppController extends ChangeNotifier {
   }
 
   Future<LoginValidationResult> login(String email, String password) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
     final result = validateLogin(email, password);
     if (!result.isValid) {
+      _errorMessage = result.errorMessage;
+      _isLoading = false;
+      notifyListeners();
       return result;
     }
     _isLoggedIn = true;
     _userEmail = email;
     await StorageService.setLoggedIn(true);
     await StorageService.saveUserEmail(email);
+    _isLoading = false;
     notifyListeners();
     return LoginValidationResult(isValid: true);
   }
@@ -69,6 +81,7 @@ class AppController extends ChangeNotifier {
     _isLoggedIn = false;
     _userEmail = '';
     _currentTab = 1;
+    _errorMessage = null;
     await StorageService.clearAll();
     notifyListeners();
   }

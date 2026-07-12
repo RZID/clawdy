@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
-import '../../auth/controllers/auth_controller.dart';
+import '../../../core/controllers/app_controller.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -203,10 +203,21 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () async {
+                    final controller = context.read<AppController>();
+                    if (controller.isLoading) return;
                     final email = _emailController.text.trim();
                     final password = _passwordController.text;
-                    final authController = context.read<AuthController>();
-                    await authController.login(email, password);
+                    final result = await controller.login(email, password);
+                    if (!context.mounted) return;
+                    if (!result.isValid && controller.errorMessage != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(controller.errorMessage!),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.userBubble,
@@ -216,13 +227,27 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
-                  child: Text(
-                    'Continue',
-                    style: textTheme.labelLarge?.copyWith(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  child: Consumer<AppController>(
+                    builder: (context, controller, _) {
+                      if (controller.isLoading) {
+                        return const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        );
+                      }
+                      return Text(
+                        'Continue',
+                        style: textTheme.labelLarge?.copyWith(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
