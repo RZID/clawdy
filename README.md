@@ -38,12 +38,96 @@ Clawdy is a research workspace application designed specifically for academics, 
 3. Run the app:
    flutter run
 
-## Implementation Notes
+## Software Architecture
 
-- Login page includes email/password validation
-- SSO buttons for Google and Facebook
-- Bottom navigation bar with 3 tabs
-- AI chat with document context awareness
+The project follows a **feature-based structure** that separates core infrastructure from feature-specific code:
+
+```
+lib/
+├── core/                          # Shared infrastructure
+│   ├── constants/                 # App-wide constants (colors, strings)
+│   ├── controllers/               # App-level state (AppController)
+│   ├── models/                    # Data models (ResearchModel)
+│   ├── services/                  # Business logic (auth, API, storage, camera)
+│   └── theme/                     # App theming
+└── features/                      # Feature modules
+    ├── auth/                      # Login & session management
+    │   ├── controllers/           # AuthController
+    │   └── screens/               # WelcomeScreen
+    ├── chat/                      # AI chat interface
+    │   ├── controllers/           # CameraController
+    │   └── screens/               # ChatScreen
+    ├── dashboard/                 # Library & research
+    │   ├── controllers/           # LibraryController
+    │   └── screens/               # LibraryScreen
+    └── main/                      # Navigation shell
+        └── screens/               # MainNavigationScreen
+```
+
+This structure ensures each feature is self-contained with its own controllers and screens, while shared infrastructure lives in `core/`. Adding a new feature means creating a new folder under `features/` without touching unrelated code.
+
+## State Management
+
+The app uses **Provider** (`provider: ^6.1.2`) for reactive state management:
+
+| Controller          | Purpose                             | Key State                                           |
+| ------------------- | ----------------------------------- | --------------------------------------------------- |
+| `AppController`     | Auth state, session, tab navigation | `isLoggedIn`, `userEmail`, `currentTab`, `messages` |
+| `LibraryController` | Research data fetching              | `researchItems`, `isLoading`, `error`               |
+| `CameraController`  | Document capture                    | `capturedImage`                                     |
+
+All controllers extend `ChangeNotifier` and are registered via `MultiProvider` in `main.dart`. The `SplashDecider` widget reads `AppController` on startup to restore session and route to the correct screen.
+
+## API Integration
+
+The app integrates with the **CrossRef API** (`https://api.crossref.org/works`) to fetch recent research papers:
+
+```dart
+GET https://api.crossref.org/works?query=$query&rows=$rows&sort=published&order=desc
+```
+
+The response is parsed into `ResearchModel` objects via `ResearchModel.fromJson()`, which extracts:
+
+- `title` — from the `title` array (first element)
+- `authors` — from the `author` array, combining `given` and `family` names
+- `publishedDate` — from `created["date-time"]`
+- `doi` — from the `DOI` field
+- `url` — from the `URL` field
+
+The `LibraryController.fetchRecentResearch()` method handles the HTTP call, loading state, and error handling.
+
+## Local Storage
+
+Session persistence uses two storage solutions:
+
+- **`flutter_secure_storage`** — Stores the session token (`session_token` key) with encrypted storage for sensitive data
+- **`shared_preferences`** — Stores `is_logged_in` (bool) and `user_email` (string) for quick session checks
+
+The `StorageService` class provides a static API for all storage operations. On app start, `AppController.checkSession()` reads from `shared_preferences` to restore the login state, eliminating the need to re-enter credentials.
+
+## Mobile Feature: Camera Document Capture
+
+The app uses `image_picker` (`^1.1.2`) for document capture:
+
+- `CameraService.pickImageFromCamera()` opens the device camera and returns a `File` or `null` if cancelled
+- `CameraController.captureDocument()` manages the captured image state
+- The "PDF Analysis" quick action on the Library screen triggers capture and displays the result in a dialog
+
+**Required native setup:**
+
+- **Android**: Add `CAMERA` permission to `AndroidManifest.xml` and configure `FileProvider`
+- **iOS**: Add `NSCameraUsageDescription` to `Info.plist`
+
+## Screenshots
+
+> Screenshots coming soon.
+
+<!--
+Add screenshots here by placing images in an assets/screenshots/ folder:
+![Login Screen](assets/screenshots/login.png)
+![Library Screen](assets/screenshots/library.png)
+![AI Chat](assets/screenshots/chat.png)
+-->
 
 ## Author
 
@@ -52,4 +136,4 @@ Ramadhanu
 
 ## Submission Date
 
-June 14, 2026
+July 12, 2026

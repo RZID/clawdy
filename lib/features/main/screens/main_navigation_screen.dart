@@ -157,21 +157,33 @@ class SettingsPlaceholderScreen extends StatelessWidget {
             leading: const Icon(Icons.person_outline),
             title: const Text('Account Details'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(
+                builder: (_) => const _SettingsDetailScreen(title: 'Account Details'),
+              ));
+            },
           ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.notifications_none),
             title: const Text('Notification Preferences'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(
+                builder: (_) => const _SettingsDetailScreen(title: 'Notification Preferences'),
+              ));
+            },
           ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.security_outlined),
             title: const Text('Security & Privacy'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(
+                builder: (_) => const _SettingsDetailScreen(title: 'Security & Privacy'),
+              ));
+            },
           ),
           const Divider(),
           const SizedBox(height: 40),
@@ -200,6 +212,121 @@ class SettingsPlaceholderScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SettingsDetailScreen extends StatelessWidget {
+  final String title;
+  const _SettingsDetailScreen({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title), backgroundColor: Colors.white, elevation: 0.5),
+      body: ListView(
+        padding: const EdgeInsets.all(24),
+        children: _buildContent(context),
+      ),
+    );
+  }
+
+  List<Widget> _buildContent(BuildContext context) {
+    switch (title) {
+      case 'Account Details':
+        return [
+          const SizedBox(height: 16),
+          Center(
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  image: NetworkImage(
+                    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+                  ),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildField('Display Name', 'Researcher'),
+          const SizedBox(height: 16),
+          _buildField('Email', context.read<AppController>().userEmail),
+          const SizedBox(height: 16),
+          _buildField('Institution', 'University'),
+          const SizedBox(height: 16),
+          _buildField('Department', 'Computer Science'),
+        ];
+      case 'Notification Preferences':
+        return [
+          const SizedBox(height: 8),
+          _buildSwitchTile('Research Updates', 'Get notified when new papers match your interests', true),
+          const Divider(),
+          _buildSwitchTile('Chat Replies', 'Notifications for AI chat responses', true),
+          const Divider(),
+          _buildSwitchTile('Weekly Digest', 'Summary of your research activity', false),
+          const Divider(),
+          _buildSwitchTile('Citation Alerts', 'When someone cites your work', false),
+        ];
+      case 'Security & Privacy':
+        return [
+          const SizedBox(height: 8),
+          _buildNavigationTile(context, Icons.lock_outline, 'Change Password', 'Update your account password'),
+          const Divider(),
+          _buildNavigationTile(context, Icons.shield_outlined, 'Two-Factor Authentication', 'Add an extra layer of security'),
+          const Divider(),
+          _buildNavigationTile(context, Icons.history, 'Login History', 'View recent login activity'),
+          const Divider(),
+          _buildNavigationTile(context, Icons.delete_outline, 'Delete Account', 'Permanently delete your account'),
+        ];
+      default:
+        return [const SizedBox()];
+    }
+  }
+
+  Widget _buildField(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
+        const SizedBox(height: 6),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.cardBorder, width: 1),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(value.isNotEmpty ? value : 'Not set', style: const TextStyle(fontSize: 14)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSwitchTile(String title, String subtitle, bool value) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textHint)),
+      trailing: Switch(value: value, onChanged: (_) {}),
+    );
+  }
+
+  Widget _buildNavigationTile(BuildContext context, IconData icon, String title, String subtitle) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon, color: AppColors.textSecondary),
+      title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textHint)),
+      trailing: const Icon(Icons.chevron_right, size: 20),
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$title coming soon.')),
+        );
+      },
     );
   }
 }

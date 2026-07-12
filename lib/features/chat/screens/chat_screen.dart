@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/controllers/app_controller.dart';
+import '../../auth/screens/account_screen.dart';
+import 'chat_search_delegate.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -44,20 +47,27 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16.0),
-          child: Center(
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: const BoxDecoration(
-                color: Color(0xFFE5E7EB),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.person,
-                color: Color(0xFF9CA3AF),
-                size: 20,
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(
+              builder: (_) => const AccountScreen(),
+            ));
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: Center(
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE5E7EB),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person,
+                  color: Color(0xFF9CA3AF),
+                  size: 20,
+                ),
               ),
             ),
           ),
@@ -74,7 +84,9 @@ class _ChatScreenState extends State<ChatScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: AppColors.textPrimary, size: 22),
-            onPressed: () {},
+            onPressed: () {
+              showSearch(context: context, delegate: ChatSearchDelegate());
+            },
           ),
           const SizedBox(width: 8),
         ],
@@ -177,7 +189,15 @@ class _ChatScreenState extends State<ChatScreen> {
                   // Attachment button
                   IconButton(
                     icon: const Icon(Icons.attach_file, color: AppColors.textSecondary, size: 24),
-                    onPressed: () {},
+                    onPressed: () async {
+                      final picker = ImagePicker();
+                      final picked = await picker.pickImage(source: ImageSource.gallery);
+                      if (picked != null && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Attached: ${picked.name}')),
+                        );
+                      }
+                    },
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),

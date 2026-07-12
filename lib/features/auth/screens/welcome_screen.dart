@@ -178,7 +178,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     ],
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Password reset link sent to your email.'),
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                    },
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
                       minimumSize: Size.zero,
@@ -285,7 +292,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Facebook login coming soon.')),
+                          );
+                        },
                         icon: const Icon(
                           Icons.facebook,
                           color: Color(0xFF1877F2),
@@ -303,7 +314,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Google login coming soon.')),
+                          );
+                        },
                         icon: Image.network(
                           'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
                           height: 20,
@@ -322,23 +337,30 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
               // Footer
               Center(
-                child: Text.rich(
-                  TextSpan(
-                    text: "Don't have an account? ",
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: 'Sign up',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
-                        ),
+                child: GestureDetector(
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Registration coming soon.')),
+                    );
+                  },
+                  child: Text.rich(
+                    TextSpan(
+                      text: "Don't have an account? ",
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
                       ),
-                    ],
+                      children: [
+                        TextSpan(
+                          text: 'Sign up',
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

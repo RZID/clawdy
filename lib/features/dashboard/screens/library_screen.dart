@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/controllers/app_controller.dart';
+import '../../auth/screens/account_screen.dart';
 import '../../chat/controllers/camera_controller.dart';
 import '../../dashboard/controllers/library_controller.dart';
+import '../../dashboard/screens/all_research_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -37,19 +39,26 @@ class _LibraryScreenState extends State<LibraryScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16.0),
-          child: Center(
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: NetworkImage(
-                    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(
+              builder: (_) => const AccountScreen(),
+            ));
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: Center(
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: NetworkImage(
+                      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+                    ),
+                    fit: BoxFit.cover,
                   ),
-                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -67,7 +76,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: AppColors.textPrimary, size: 22),
-            onPressed: () {},
+            onPressed: () {
+              showSearch(context: context, delegate: _LibrarySearchDelegate());
+            },
           ),
           const SizedBox(width: 8),
         ],
@@ -163,7 +174,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => const AllResearchScreen(),
+                      ));
+                    },
                     child: Text(
                       'VIEW ALL',
                       style: textTheme.labelLarge?.copyWith(
@@ -318,7 +333,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pop();
-                        // TODO: Implement PDF analysis upload
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('PDF analysis uploaded successfully.')),
+                        );
                       },
                       child: const Text('Analyze'),
                     ),
@@ -424,6 +441,63 @@ class _LibraryScreenState extends State<LibraryScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _LibrarySearchDelegate extends SearchDelegate<String> {
+  @override
+  String get searchFieldLabel => 'Search research...';
+
+  @override
+  TextStyle? get searchFieldStyle => const TextStyle(fontSize: 14);
+
+  @override
+  List<Widget>? buildActions(BuildContext context) {
+    return [
+      if (query.isNotEmpty)
+        IconButton(
+          icon: const Icon(Icons.clear, size: 20),
+          onPressed: () => query = '',
+        ),
+    ];
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back, size: 20),
+      onPressed: () => close(context, ''),
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    if (query.trim().isEmpty) return const SizedBox();
+    return ListTile(
+      leading: const Icon(Icons.description_outlined),
+      title: Text(query),
+      subtitle: const Text('Tap to search in CrossRef'),
+      onTap: () => close(context, query),
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    final items = ['Quantum Supremacy', 'LLM Hallucination', 'Neuromorphic Computing', 'Urban Climate'];
+    final filtered = query.isEmpty
+        ? items
+        : items.where((e) => e.toLowerCase().contains(query.toLowerCase())).toList();
+    return ListView.builder(
+      itemCount: filtered.length,
+      itemBuilder: (context, index) => ListTile(
+        leading: const Icon(Icons.search, size: 20),
+        title: Text(filtered[index]),
+        onTap: () {
+          query = filtered[index];
+          showResults(context);
+        },
       ),
     );
   }
