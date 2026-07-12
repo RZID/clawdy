@@ -1,15 +1,36 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/controllers/app_controller.dart';
+import '../../chat/controllers/camera_controller.dart';
+import '../../dashboard/controllers/library_controller.dart';
 
-class LibraryScreen extends StatelessWidget {
+class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
+
+  @override
+  State<LibraryScreen> createState() => _LibraryScreenState();
+}
+
+class _LibraryScreenState extends State<LibraryScreen> {
+  late final AppController _appController;
+  late final CameraController _cameraController;
+
+  @override
+  void initState() {
+    super.initState();
+    _appController = context.read<AppController>();
+    _cameraController = context.read<CameraController>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<LibraryController>().fetchRecentResearch();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final controller = context.read<AppController>();
+    final libraryController = context.watch<LibraryController>();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -93,7 +114,7 @@ class LibraryScreen extends StatelessWidget {
                       isBlue: true,
                       icon: Icons.add,
                       onTap: () {
-                        controller.navigateToTab(0);
+                        _appController.navigateToTab(0);
                       },
                     ),
                   ),
@@ -104,8 +125,11 @@ class LibraryScreen extends StatelessWidget {
                       title: 'PDF\nAnalysis',
                       isBlue: false,
                       icon: Icons.picture_as_pdf_outlined,
-                      onTap: () {
-                        controller.navigateToTab(0);
+                      onTap: () async {
+                        await _cameraController.captureDocument();
+                        if (_cameraController.capturedImage != null && context.mounted) {
+                          _showCapturedImageDialog(context, _cameraController.capturedImage!);
+                        }
                       },
                     ),
                   ),
@@ -117,7 +141,7 @@ class LibraryScreen extends StatelessWidget {
                       isBlue: false,
                       icon: Icons.find_in_page_outlined,
                       onTap: () {
-                        controller.navigateToTab(0);
+                        _appController.navigateToTab(0);
                       },
                     ),
                   ),
@@ -154,44 +178,153 @@ class LibraryScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               // List of items
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.cardBorder, width: 1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Column(
+              _buildResearchList(context, libraryController),
+              const SizedBox(height: 30),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResearchList(BuildContext context, LibraryController libraryController) {
+    if (libraryController.isLoading) {
+      return Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.cardBorder, width: 1),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (libraryController.error != null) {
+      return Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.cardBorder, width: 1),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const SizedBox(height: 12),
+            Text(
+              'Failed to load research',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              libraryController.error!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => libraryController.fetchRecentResearch(),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (libraryController.researchItems.isEmpty) {
+      return Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.cardBorder, width: 1),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: Text(
+            'No recent research found',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.cardBorder, width: 1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: libraryController.researchItems.length,
+        separatorBuilder: (_, _) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final item = libraryController.researchItems[index];
+          return _buildResearchItem(
+            title: item.title,
+            time: item.publishedDate,
+            icon: Icons.description_outlined,
+            onTap: () => _appController.navigateToTab(0),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showCapturedImageDialog(BuildContext context, File image) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(24),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildResearchItem(
-                      title: 'Quantum Supremacy Models & Algorithmic B',
-                      time: '2h ago',
-                      icon: Icons.description_outlined,
-                      onTap: () => controller.navigateToTab(0),
+                    Text(
+                      'Captured Document',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                     ),
-                    const Divider(height: 1),
-                    _buildResearchItem(
-                      title: 'LLM Hallucination Rates in Clinical Trials',
-                      time: 'Yesterday',
-                      icon: Icons.article_outlined,
-                      onTap: () => controller.navigateToTab(0),
-                    ),
-                    const Divider(height: 1),
-                    _buildResearchItem(
-                      title: 'Neuromorphic Computing Pathways: A Meta-',
-                      time: 'Oct 12',
-                      icon: Icons.article_outlined,
-                      onTap: () => controller.navigateToTab(0),
-                    ),
-                    const Divider(height: 1),
-                    _buildResearchItem(
-                      title: 'Dataset: Urban Climate Variance',
-                      time: 'Oct 10',
-                      icon: Icons.folder_open_outlined,
-                      onTap: () => controller.navigateToTab(0),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 30),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 400),
+                child: Image.file(image, fit: BoxFit.contain),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Dismiss'),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        // TODO: Implement PDF analysis upload
+                      },
+                      child: const Text('Analyze'),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

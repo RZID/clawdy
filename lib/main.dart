@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'core/controllers/app_controller.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/controllers/auth_controller.dart';
+import 'features/dashboard/controllers/library_controller.dart';
+import 'features/chat/controllers/camera_controller.dart';
 import 'features/auth/screens/welcome_screen.dart';
 import 'features/main/screens/main_navigation_screen.dart';
 
@@ -14,6 +16,8 @@ void main() {
         ProxyProvider<AppController, AuthController>(
           update: (_, appController, _) => AuthController(appController),
         ),
+        ChangeNotifierProvider(create: (_) => LibraryController()),
+        ChangeNotifierProvider(create: (_) => CameraController()),
       ],
       child: const MyApp(),
     ),
