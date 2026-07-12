@@ -33,10 +33,10 @@ class AppController extends ChangeNotifier {
 
   AppController() {
     _initMockMessages();
-    _loadSession();
+    checkSession();
   }
 
-  Future<void> _loadSession() async {
+  Future<void> checkSession() async {
     _isLoggedIn = await StorageService.isLoggedIn();
     _userEmail = await StorageService.readUserEmail() ?? '';
     notifyListeners();
