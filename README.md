@@ -120,14 +120,13 @@ The app uses `image_picker` (`^1.1.2`) for document capture:
 
 ## Screenshots
 
-> Screenshots coming soon.
+| Preview 1 | Preview 2 |
+|---|---|
+| ![Preview 1](images/preview-1.jpeg) | ![Preview 2](images/preview-2.jpeg) |
 
-<!--
-Add screenshots here by placing images in an assets/screenshots/ folder:
-![Login Screen](assets/screenshots/login.png)
-![Library Screen](assets/screenshots/library.png)
-![AI Chat](assets/screenshots/chat.png)
--->
+| Preview 3 | Preview 4 |
+|---|---|
+| ![Preview 3](images/preview-3.jpeg) | ![Preview 4](images/preview-4.jpeg) |
 
 ## Author
 
