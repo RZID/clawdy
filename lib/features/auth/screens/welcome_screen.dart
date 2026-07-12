@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
-import '../../../core/controllers/app_controller.dart';
+import '../../auth/controllers/auth_controller.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -202,8 +202,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: () {
-                    context.read<AppController>().login();
+                  onPressed: () async {
+                    final email = _emailController.text.trim();
+                    final password = _passwordController.text;
+                    final authController = context.read<AuthController>();
+                    await authController.login(email, password);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.userBubble,

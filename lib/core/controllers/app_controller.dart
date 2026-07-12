@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/auth_validation_service.dart';
+import '../services/storage_service.dart';
 
 class MessageItem {
   final String sender; // 'user' or 'assistant'
@@ -16,15 +18,24 @@ class MessageItem {
 
 class AppController extends ChangeNotifier {
   bool _isLoggedIn = false;
+  String _userEmail = '';
   int _currentTab = 1; // 0: CHATS, 1: LIBRARY, 2: SETTINGS
   final List<MessageItem> _messages = [];
 
   bool get isLoggedIn => _isLoggedIn;
+  String get userEmail => _userEmail;
   int get currentTab => _currentTab;
   List<MessageItem> get messages => _messages;
 
   AppController() {
     _initMockMessages();
+    _loadSession();
+  }
+
+  Future<void> _loadSession() async {
+    _isLoggedIn = await StorageService.isLoggedIn();
+    _userEmail = await StorageService.readUserEmail() ?? '';
+    notifyListeners();
   }
 
   void _initMockMessages() {
@@ -41,14 +52,24 @@ class AppController extends ChangeNotifier {
     ));
   }
 
-  void login() {
+  Future<LoginValidationResult> login(String email, String password) async {
+    final result = validateLogin(email, password);
+    if (!result.isValid) {
+      return result;
+    }
     _isLoggedIn = true;
+    _userEmail = email;
+    await StorageService.setLoggedIn(true);
+    await StorageService.saveUserEmail(email);
     notifyListeners();
+    return LoginValidationResult(isValid: true);
   }
 
-  void logout() {
+  Future<void> logout() async {
     _isLoggedIn = false;
+    _userEmail = '';
     _currentTab = 1;
+    await StorageService.clearAll();
     notifyListeners();
   }
 
