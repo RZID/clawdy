@@ -38,6 +38,20 @@ Clawdy is a research workspace application designed specifically for academics, 
 3. Run the app:
    flutter run
 
+## Submission Requirements
+
+| # | Requirement | Implementation |
+|---|------------|----------------|
+| 1 | UI/UX design from UTS | Figma design → [Clawdy](https://www.figma.com/design/mdxuywxi6GNmPzKV6mQLTa/Clawdy?node-id=0-1&t=fpXm55GObkXO5hy6-1), all screens implemented in Flutter |
+| 2 | Flutter framework | Flutter 3.44.2 / Dart 3.12.2, native Android & iOS builds |
+| 3 | Software Architecture (MVC minimum) | Feature-based architecture with Models (`ResearchModel`), Views (screens), Controllers (`AppController`, `LibraryController`, `CameraController`, `AuthController`), and Services (`AuthService`, `ResearchService`, `StorageService`, `CameraService`) |
+| 4 | State Management (Provider minimum) | Provider `^6.1.2` via `MultiProvider` with 3 `ChangeNotifierProvider`s, consumed via `context.read()`, `context.watch()`, and `Consumer` |
+| 5 | API Integration (1+ list data feature) | CrossRef API (`api.crossref.org/works`) returns `List<ResearchModel>`, displayed in `ListView.separated` on Library screen with search and detail navigation |
+| 6 | Local Storage | `flutter_secure_storage` for session token; `shared_preferences` for `is_logged_in` and `user_email` — session restored on app start via `AppController.checkSession()` |
+| 7 | Mobile Feature (Camera) | `image_picker` `^1.1.2` with `CAMERA` permission configured on Android (`AndroidManifest.xml`) and iOS (`Info.plist`), used for document capture in PDF Analysis flow |
+| 8 | GitHub repository | Pushed to `https://github.com/RZID/clawdy.git` with semantic commits |
+| 9 | Screenshots | App screenshots included below and in `images/` directory |
+
 ## Software Architecture
 
 The project follows a **feature-based structure** that separates core infrastructure from feature-specific code:
@@ -113,10 +127,10 @@ The app uses `image_picker` (`^1.1.2`) for document capture:
 - `CameraController.captureDocument()` manages the captured image state
 - The "PDF Analysis" quick action on the Library screen triggers capture and displays the result in a dialog
 
-**Required native setup:**
+Native camera permissions are configured for both platforms:
 
-- **Android**: Add `CAMERA` permission to `AndroidManifest.xml` and configure `FileProvider`
-- **iOS**: Add `NSCameraUsageDescription` to `Info.plist`
+- **Android**: `CAMERA` permission and `FileProvider` added to `AndroidManifest.xml`
+- **iOS**: `NSCameraUsageDescription` added to `Info.plist`
 
 ## Screenshots
 
