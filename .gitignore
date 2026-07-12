@@ -31,13 +31,18 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+build/
 /coverage/
+android/local.properties
+ios/Flutter/Flutter.framework
 
 # Symbolication related
 app.*.symbols
 
 # Obfuscation related
 app.*.map.json
+
+.env
 
 # Android Studio will place build artifacts here
 /android/app/debug
